@@ -1,0 +1,37 @@
+version: "3.8"
+
+services:
+  api_elias:
+    build: .
+    restart: always
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/Elias/app
+    environment:
+      - DB_HOST=Cryptock_sql
+    env_file:
+      - .env
+    depends_on:
+      Cryptock_sql:
+        condition: service_healthy
+
+  Cryptock_sql:
+    image: postgres:17
+    environment:
+      - POSTGRES_DB=Cryptock
+      - POSTGRES_USER=elias
+      - POSTGRES_PASSWORD=secret_123
+    ports:
+      - "5430:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "elias", "-d", "Cryptock"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
